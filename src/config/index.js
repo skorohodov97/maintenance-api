@@ -12,6 +12,7 @@ const config = {
   weatherApiUrl: process.env.WEATHER_API_URL || '',
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS) || 5000,
   logLevel: process.env.LOG_LEVEL || 'info',
+  jsonBodyLimit: process.env.JSON_BODY_LIMIT || '100kb',
 };
 
 export default config;
