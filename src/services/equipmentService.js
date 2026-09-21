@@ -1,4 +1,5 @@
 import equipmentRepository from '../repositories/equipmentRepository.js';
+import { ConflictError } from '../errors/index.js';
 
 const ensureUniqueSerialNumber = async (serialNumber, equipmentId) => {
   if (serialNumber === undefined) {
@@ -11,10 +12,7 @@ const ensureUniqueSerialNumber = async (serialNumber, equipmentId) => {
   );
 
   if (duplicate) {
-    const error = new Error('Equipment with this serial number already exists');
-    error.code = 'DUPLICATE_SERIAL_NUMBER';
-
-    throw error;
+    throw new ConflictError('Equipment with this serial number already exists');
   }
 };
 

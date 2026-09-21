@@ -1,14 +1,12 @@
 import equipmentRepository from '../repositories/equipmentRepository.js';
 import maintenanceRequestRepository from '../repositories/maintenanceRequestRepository.js';
+import { ConflictError, NotFoundError } from '../errors/index.js';
 
 const ensureEquipmentExists = async (equipmentId) => {
   const equipment = await equipmentRepository.findById(equipmentId);
 
   if (!equipment) {
-    const error = new Error('Equipment not found');
-    error.code = 'EQUIPMENT_NOT_FOUND';
-
-    throw error;
+    throw new NotFoundError('Equipment not found');
   }
 };
 
@@ -129,10 +127,7 @@ const maintenanceRequestService = {
     }
 
     if (!allowedStatusTransitions[request.status]?.has(status)) {
-      const error = new Error(`Cannot change status from ${request.status} to ${status}`);
-      error.code = 'INVALID_STATUS_TRANSITION';
-
-      throw error;
+      throw new ConflictError(`Cannot change status from ${request.status} to ${status}`);
     }
 
     return maintenanceRequestRepository.update(id, { status });
