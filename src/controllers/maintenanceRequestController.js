@@ -67,6 +67,27 @@ const updateRequest = async (request, response) => {
   }
 };
 
+const updateRequestStatus = async (request, response) => {
+  try {
+    const maintenanceRequest = await maintenanceRequestService.transitionRequestStatus(
+      request.params.id,
+      request.body.status,
+    );
+
+    if (!maintenanceRequest) {
+      return response.status(404).json({ message: 'Maintenance request not found' });
+    }
+
+    return response.status(200).json(maintenanceRequest);
+  } catch (error) {
+    if (error.code === 'INVALID_STATUS_TRANSITION') {
+      return response.status(409).json({ message: error.message });
+    }
+
+    throw error;
+  }
+};
+
 const deleteRequest = async (request, response) => {
   const maintenanceRequest = await maintenanceRequestService.deleteRequest(request.params.id);
 
@@ -83,5 +104,6 @@ export {
   getRequestsByEquipmentId,
   createRequest,
   updateRequest,
+  updateRequestStatus,
   deleteRequest,
 };
