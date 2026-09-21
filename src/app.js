@@ -4,10 +4,12 @@ import maintenanceRequestRouter from './routes/maintenanceRequestRoutes.js';
 import notFoundMiddleware from './middlewares/notFoundMiddleware.js';
 import errorHandler from './middlewares/errorHandler.js';
 import requestIdMiddleware from './middlewares/requestIdMiddleware.js';
+import requestLoggingMiddleware from './middlewares/requestLoggingMiddleware.js';
 
 const app = express();
 
 app.use(requestIdMiddleware);
+app.use(requestLoggingMiddleware);
 app.use(express.json());
 
 app.get('/api/health', (request, response) => {

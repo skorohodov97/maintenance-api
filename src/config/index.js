@@ -8,6 +8,7 @@ const config = {
   rateLimitMax: Number(process.env.RATE_LIMIT_MAX) || 100,
   weatherApiUrl: process.env.WEATHER_API_URL || '',
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS) || 5000,
+  logLevel: process.env.LOG_LEVEL || 'info',
 };
 
 export default config;
