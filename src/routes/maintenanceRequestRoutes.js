@@ -7,6 +7,7 @@ import {
   updateRequest,
   updateRequestStatus,
 } from '../controllers/maintenanceRequestController.js';
+import asyncHandler from '../middlewares/asyncHandler.js';
 import validateRequest from '../middlewares/validateRequest.js';
 import {
   requestIdParams,
@@ -22,17 +23,17 @@ const validateRequestId = validateRequest({ params: requestIdParams });
 
 maintenanceRequestRouter
   .route('/')
-  .get(validateRequest({ query: requestQuery }), getRequests)
-  .post(validateRequest({ body: requiredRequestBody }), createRequest);
+  .get(validateRequest({ query: requestQuery }), asyncHandler(getRequests))
+  .post(validateRequest({ body: requiredRequestBody }), asyncHandler(createRequest));
 maintenanceRequestRouter.patch(
   '/:id/status',
   validateRequest({ params: requestIdParams, body: requestStatusBody }),
-  updateRequestStatus,
+  asyncHandler(updateRequestStatus),
 );
 maintenanceRequestRouter
   .route('/:id')
-  .get(validateRequestId, getRequestById)
-  .patch(validateRequestId, validateRequest({ body: updateRequestBody }), updateRequest)
-  .delete(validateRequestId, deleteRequest);
+  .get(validateRequestId, asyncHandler(getRequestById))
+  .patch(validateRequestId, validateRequest({ body: updateRequestBody }), asyncHandler(updateRequest))
+  .delete(validateRequestId, asyncHandler(deleteRequest));
 
 export default maintenanceRequestRouter;
