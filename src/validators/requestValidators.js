@@ -1,36 +1,43 @@
-import { isDate, isIntegerInRange, isNonEmptyString, isOneOf, isUuid } from './common.js';
+import {
+  isIntegerInRange,
+  isIsoDate,
+  isIsoDateTime,
+  isOneOf,
+  isStringLength,
+  isStringUpTo,
+  isUuid,
+} from './common.js';
 
-const priorities = ['low', 'medium', 'high'];
+const priorities = ['low', 'medium', 'high', 'critical'];
 const requestStatuses = ['new', 'in_progress', 'done', 'rejected'];
 
 const requestFields = {
   equipmentId: { validate: isUuid },
-  title: { validate: isNonEmptyString },
-  description: { validate: isNonEmptyString },
+  title: { validate: isStringLength(5, 120) },
+  description: { validate: isStringUpTo(2000) },
   priority: { validate: isOneOf(priorities) },
-  status: { validate: isOneOf(requestStatuses) },
-  plannedAt: { validate: isDate },
+  plannedAt: { validate: isIsoDateTime },
 };
 
 const requiredRequestBody = {
-  allowUnknown: false,
-  fields: Object.fromEntries(
-    Object.entries(requestFields)
-      .filter(([field]) => field !== 'status')
-      .map(([field, rules]) => [field, { ...rules, required: true }]),
-  ),
+  stripUnknown: true,
+  fields: {
+    equipmentId: { ...requestFields.equipmentId, required: true },
+    title: { ...requestFields.title, required: true },
+    description: requestFields.description,
+    priority: { ...requestFields.priority, required: true },
+    plannedAt: requestFields.plannedAt,
+  },
 };
 
 const updateRequestBody = {
-  allowUnknown: false,
+  stripUnknown: true,
   requireAtLeastOne: true,
-  fields: Object.fromEntries(
-    Object.entries(requestFields).filter(([field]) => field !== 'status'),
-  ),
+  fields: requestFields,
 };
 
 const requestStatusBody = {
-  allowUnknown: false,
+  stripUnknown: true,
   fields: { status: { required: true, validate: isOneOf(requestStatuses) } },
 };
 
@@ -47,8 +54,8 @@ const requestQuery = {
     equipmentId: { validate: isUuid },
     status: { validate: isOneOf(requestStatuses) },
     priority: { validate: isOneOf(priorities) },
-    dateFrom: { validate: isDate },
-    dateTo: { validate: isDate },
+    dateFrom: { validate: isIsoDate },
+    dateTo: { validate: isIsoDate },
     sort: { validate: isOneOf(['createdAt', 'priority', 'status', 'title']) },
     order: { validate: isOneOf(['asc', 'desc']) },
   },
