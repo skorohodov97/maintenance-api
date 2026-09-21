@@ -7,15 +7,31 @@ import {
   updateEquipment,
 } from '../controllers/equipmentController.js';
 import { getRequestsByEquipmentId } from '../controllers/maintenanceRequestController.js';
+import validateRequest from '../middlewares/validateRequest.js';
+import {
+  equipmentIdParams,
+  equipmentQuery,
+  requiredEquipmentBody,
+  updateEquipmentBody,
+} from '../validators/equipmentValidators.js';
 
 const equipmentRouter = Router();
 
-equipmentRouter.route('/').get(getEquipment).post(createEquipment);
-equipmentRouter.get('/:id/requests', getRequestsByEquipmentId);
+const validateEquipmentId = validateRequest({ params: equipmentIdParams });
+
+equipmentRouter
+  .route('/')
+  .get(validateRequest({ query: equipmentQuery }), getEquipment)
+  .post(validateRequest({ body: requiredEquipmentBody }), createEquipment);
+equipmentRouter.get(
+  '/:id/requests',
+  validateRequest({ params: equipmentIdParams }),
+  getRequestsByEquipmentId,
+);
 equipmentRouter
   .route('/:id')
-  .get(getEquipmentById)
-  .patch(updateEquipment)
-  .delete(deleteEquipment);
+  .get(validateEquipmentId, getEquipmentById)
+  .patch(validateEquipmentId, validateRequest({ body: updateEquipmentBody }), updateEquipment)
+  .delete(validateEquipmentId, deleteEquipment);
 
 export default equipmentRouter;
