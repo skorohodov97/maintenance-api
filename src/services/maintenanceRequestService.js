@@ -33,6 +33,12 @@ const getDateTo = (value) => {
 };
 
 const sortFields = new Set(['createdAt', 'priority', 'status', 'title']);
+const allowedStatusTransitions = {
+  new: new Set(['in_progress', 'rejected']),
+  in_progress: new Set(['done', 'rejected']),
+  done: new Set(),
+  rejected: new Set(),
+};
 
 const maintenanceRequestService = {
   async getAllRequests(query = {}) {
@@ -93,7 +99,10 @@ const maintenanceRequestService = {
   async createRequest(data) {
     await ensureEquipmentExists(data.equipmentId);
 
-    return maintenanceRequestRepository.create(data);
+    return maintenanceRequestRepository.create({
+      ...data,
+      status: 'new',
+    });
   },
 
   async updateRequest(id, data) {
@@ -107,7 +116,26 @@ const maintenanceRequestService = {
       await ensureEquipmentExists(data.equipmentId);
     }
 
-    return maintenanceRequestRepository.update(id, data);
+    const { status, ...updateData } = data;
+
+    return maintenanceRequestRepository.update(id, updateData);
+  },
+
+  async transitionRequestStatus(id, status) {
+    const request = await maintenanceRequestRepository.findById(id);
+
+    if (!request) {
+      return null;
+    }
+
+    if (!allowedStatusTransitions[request.status]?.has(status)) {
+      const error = new Error(`Cannot change status from ${request.status} to ${status}`);
+      error.code = 'INVALID_STATUS_TRANSITION';
+
+      throw error;
+    }
+
+    return maintenanceRequestRepository.update(id, { status });
   },
 
   async deleteRequest(id) {
