@@ -6,10 +6,12 @@ import {
   getEquipmentById,
   updateEquipment,
 } from '../controllers/equipmentController.js';
+import { getRequestsByEquipmentId } from '../controllers/maintenanceRequestController.js';
 
 const equipmentRouter = Router();
 
 equipmentRouter.route('/').get(getEquipment).post(createEquipment);
+equipmentRouter.get('/:id/requests', getRequestsByEquipmentId);
 equipmentRouter
   .route('/:id')
   .get(getEquipmentById)

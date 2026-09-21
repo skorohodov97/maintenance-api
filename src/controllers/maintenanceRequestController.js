@@ -16,6 +16,22 @@ const getRequestById = async (request, response) => {
   return response.status(200).json(maintenanceRequest);
 };
 
+const getRequestsByEquipmentId = async (request, response) => {
+  try {
+    const maintenanceRequests = await maintenanceRequestService.getRequestsByEquipmentId(
+      request.params.id,
+    );
+
+    return response.status(200).json(maintenanceRequests);
+  } catch (error) {
+    if (error.code === 'EQUIPMENT_NOT_FOUND') {
+      return response.status(404).json({ message: error.message });
+    }
+
+    throw error;
+  }
+};
+
 const createRequest = async (request, response) => {
   try {
     const maintenanceRequest = await maintenanceRequestService.createRequest(request.body);
@@ -64,6 +80,7 @@ const deleteRequest = async (request, response) => {
 export {
   getRequests,
   getRequestById,
+  getRequestsByEquipmentId,
   createRequest,
   updateRequest,
   deleteRequest,

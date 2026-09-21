@@ -22,6 +22,8 @@ const maintenanceRequestService = {
   },
 
   async getRequestsByEquipmentId(equipmentId) {
+    await ensureEquipmentExists(equipmentId);
+
     return maintenanceRequestRepository.findByEquipmentId(equipmentId);
   },
 
