@@ -28,7 +28,7 @@ const getRequestsByEquipmentId = async (request, response) => {
 const createRequest = async (request, response) => {
   const maintenanceRequest = await maintenanceRequestService.createRequest(request.body);
 
-  return response.status(201).json(maintenanceRequest);
+  return response.location('/api/requests/' + maintenanceRequest.id).status(201).json(maintenanceRequest);
 };
 
 const updateRequest = async (request, response) => {

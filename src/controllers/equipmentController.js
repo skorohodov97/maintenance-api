@@ -30,7 +30,7 @@ const getEquipmentWeather = async (request, response) => {
 const createEquipment = async (request, response) => {
   const equipment = await equipmentService.createEquipment(request.body);
 
-  return response.status(201).json(equipment);
+  return response.location('/api/equipment/' + equipment.id).status(201).json(equipment);
 };
 
 const updateEquipment = async (request, response) => {

@@ -1,10 +1,18 @@
-import { isDate, isIntegerInRange, isNonEmptyString, isOneOf, isUuid } from './common.js';
+import {
+  isIntegerInRange,
+  isNotFutureDate,
+  isOneOf,
+  isStringLength,
+  isStringUpTo,
+  isUuid,
+} from './common.js';
 
-const equipmentStatuses = ['active', 'maintenance', 'inactive'];
+const equipmentTypes = ['turbine', 'inverter', 'sensor', 'substation'];
+const equipmentStatuses = ['operational', 'maintenance', 'fault', 'decommissioned'];
 
 const locationValidator = (value) => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return 'must be an object';
+    return 'must be an object with lat and lon';
   }
 
   const latitude = Number(value.lat);
@@ -22,23 +30,30 @@ const locationValidator = (value) => {
 };
 
 const equipmentFields = {
-  name: { validate: isNonEmptyString },
-  type: { validate: isNonEmptyString },
-  serialNumber: { validate: isNonEmptyString },
+  name: { validate: isStringLength(3, 100) },
+  type: { validate: isOneOf(equipmentTypes) },
+  serialNumber: { validate: isStringLength(1, 255) },
   location: { validate: locationValidator },
   status: { validate: isOneOf(equipmentStatuses) },
-  installedAt: { validate: isDate },
+  installedAt: { validate: isNotFutureDate },
 };
 
+const sanitizeEquipmentBody = (body) => ({
+  ...body,
+  ...(body.location ? { location: { lat: body.location.lat, lon: body.location.lon } } : {}),
+});
+
 const requiredEquipmentBody = {
-  allowUnknown: false,
+  stripUnknown: true,
+  sanitize: sanitizeEquipmentBody,
   fields: Object.fromEntries(
     Object.entries(equipmentFields).map(([field, rules]) => [field, { ...rules, required: true }]),
   ),
 };
 
 const updateEquipmentBody = {
-  allowUnknown: false,
+  stripUnknown: true,
+  sanitize: sanitizeEquipmentBody,
   requireAtLeastOne: true,
   fields: equipmentFields,
 };
@@ -54,7 +69,7 @@ const equipmentQuery = {
     page: { validate: isIntegerInRange(1, Number.MAX_SAFE_INTEGER) },
     limit: { validate: isIntegerInRange(1, 100) },
     status: { validate: isOneOf(equipmentStatuses) },
-    type: { validate: isNonEmptyString },
+    type: { validate: isOneOf(equipmentTypes) },
     sort: { validate: isOneOf(['name']) },
   },
 };

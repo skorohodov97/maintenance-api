@@ -13,6 +13,11 @@ const config = {
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS) || 5000,
   logLevel: process.env.LOG_LEVEL || 'info',
   jsonBodyLimit: process.env.JSON_BODY_LIMIT || '100kb',
+  outdoorWorkMaxWindSpeed:
+    Number.isFinite(Number(process.env.OUTDOOR_WORK_MAX_WIND_SPEED)) &&
+    Number(process.env.OUTDOOR_WORK_MAX_WIND_SPEED) >= 0
+      ? Number(process.env.OUTDOOR_WORK_MAX_WIND_SPEED)
+      : 10,
 };
 
 export default config;

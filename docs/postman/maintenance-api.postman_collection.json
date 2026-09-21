@@ -1,176 +1,48 @@
 {
   "info": {
-    "_postman_id": "2c49226c-cdfb-4c57-9f08-08e91b4bec51",
+    "_postman_id": "4d2d2d08-9fbb-4c7d-9752-5b49389e9623",
     "name": "Maintenance API",
+    "description": "Run requests in order. Configure baseUrl and, for the rate-limit test, set RATE_LIMIT_MAX to a small value before starting the API.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
-      "key": "equipmentId",
-      "value": ""
-    }
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "equipmentId", "value": "" },
+    { "key": "requestId", "value": "" },
+    { "key": "missingId", "value": "00000000-0000-4000-8000-000000000000" }
   ],
+  "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Response has a valid HTTP status', () => pm.expect(pm.response.code).to.be.within(100, 599));"] } }],
   "item": [
-    {
-      "name": "Health",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/api/health"
-      },
-      "response": []
-    },
-    {
-      "name": "Equipment",
-      "item": [
-        {
-          "name": "Create equipment",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.collectionVariables.set('equipmentId', pm.response.json().id);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Turbine A\",\n  \"serialNumber\": \"TRB-001\",\n  \"type\": \"turbine\",\n  \"status\": \"fault\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{baseUrl}}/api/equipment"
-          },
-          "response": []
-        },
-        {
-          "name": "Get equipment list",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/equipment"
-          },
-          "response": []
-        },
-        {
-          "name": "Get equipment by ID",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/equipment/{{equipmentId}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Update equipment",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Turbine A (updated)\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{baseUrl}}/api/equipment/{{equipmentId}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Filter by status",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/equipment?status=fault"
-          },
-          "response": []
-        },
-        {
-          "name": "Filter by type",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/equipment?type=turbine"
-          },
-          "response": []
-        },
-        {
-          "name": "Sort by name",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/equipment?sort=name"
-          },
-          "response": []
-        },
-        {
-          "name": "Pagination",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/equipment?page=2&limit=10"
-          },
-          "response": []
-        },
-        {
-          "name": "Duplicate serial number",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Turbine B\",\n  \"serialNumber\": \"TRB-001\",\n  \"type\": \"turbine\",\n  \"status\": \"active\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{baseUrl}}/api/equipment"
-          },
-          "response": []
-        },
-        {
-          "name": "Delete equipment",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/api/equipment/{{equipmentId}}"
-          },
-          "response": []
-        },
-        {
-          "name": "Get missing equipment",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/equipment/00000000-0000-0000-0000-000000000000"
-          },
-          "response": []
-        }
-      ]
-    }
+    { "name": "Health", "item": [
+      { "name": "GET health", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Health is available', () => pm.response.to.have.status(200));", "pm.test('Health response has status', () => pm.expect(pm.response.json()).to.have.property('status', 'ok'));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/health" } }
+    ] },
+    { "name": "Equipment", "item": [
+      { "name": "POST create equipment", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Equipment is created', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.test('Equipment response has id', () => pm.expect(body).to.have.property('id'));", "pm.collectionVariables.set('equipmentId', body.id);"] } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Weather station\",\n  \"type\": \"sensor\",\n  \"serialNumber\": \"WS-001\",\n  \"location\": { \"lat\": 55.7558, \"lon\": 37.6173 },\n  \"status\": \"operational\",\n  \"installedAt\": \"2025-01-15\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/api/equipment" } },
+      { "name": "GET list", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Equipment list is returned', () => pm.response.to.have.status(200));", "pm.test('List has data and meta', () => { const body = pm.response.json(); pm.expect(body).to.have.keys('data', 'meta'); pm.expect(body.meta).to.include.keys('total', 'page', 'limit'); });"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/equipment" } },
+      { "name": "GET by ID", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Equipment is returned', () => pm.response.to.have.status(200));", "pm.test('ID matches', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('equipmentId')));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/equipment/{{equipmentId}}" } },
+      { "name": "PATCH equipment", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Equipment is updated', () => pm.response.to.have.status(200));"] } }], "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"name\": \"Weather station updated\" }", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/api/equipment/{{equipmentId}}" } },
+      { "name": "GET filters", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Filtered list is returned', () => pm.response.to.have.status(200));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/equipment?status=operational&type=sensor" } },
+      { "name": "GET pagination", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Paginated list is returned', () => pm.response.to.have.status(200));", "pm.test('Pagination meta matches', () => pm.expect(pm.response.json().meta).to.include({ page: 1, limit: 1 }));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/equipment?page=1&limit=1" } },
+      { "name": "GET sorting", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Sorted list is returned', () => pm.response.to.have.status(200));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/equipment?sort=name" } },
+      { "name": "GET weather", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Weather is returned', () => pm.response.to.have.status(200));", "pm.test('Weather has work windows', () => pm.expect(pm.response.json().outdoorWork).to.have.property('workWindows'));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/equipment/{{equipmentId}}/weather" } },
+      { "name": "POST duplicate serial number (409)", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Duplicate serial is rejected', () => pm.response.to.have.status(409));", "pm.test('Error format is returned', () => pm.expect(pm.response.json()).to.have.nested.property('error.code'));"] } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Duplicate\",\n  \"type\": \"sensor\",\n  \"serialNumber\": \"WS-001\",\n  \"location\": { \"lat\": 55.7558, \"lon\": 37.6173 },\n  \"status\": \"operational\",\n  \"installedAt\": \"2025-01-15\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/api/equipment" } },
+      { "name": "POST invalid body (400)", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Invalid body is rejected', () => pm.response.to.have.status(400));", "pm.test('Validation details are returned', () => pm.expect(pm.response.json()).to.have.nested.property('error.details'));"] } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"name\": \"\" }", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/api/equipment" } },
+      { "name": "GET unknown ID (404)", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Unknown equipment returns 404', () => pm.response.to.have.status(404));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/equipment/{{missingId}}" } }
+    ] },
+    { "name": "Requests", "item": [
+      { "name": "POST create request", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Request is created', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.test('Request response has id', () => pm.expect(body).to.have.property('id'));", "pm.collectionVariables.set('requestId', body.id);"] } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"equipmentId\": \"{{equipmentId}}\",\n  \"title\": \"Inspect sensor\",\n  \"description\": \"Inspect connectors and enclosure\",\n  \"priority\": \"high\",\n  \"plannedAt\": \"2026-10-01T09:00:00.000Z\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/api/requests" } },
+      { "name": "GET list", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Request list is returned', () => pm.response.to.have.status(200));", "pm.test('List has meta', () => pm.expect(pm.response.json()).to.have.property('meta'));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/requests?equipmentId={{equipmentId}}&priority=high&sort=createdAt&order=desc" } },
+      { "name": "GET by ID", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Request is returned', () => pm.response.to.have.status(200));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/requests/{{requestId}}" } },
+      { "name": "PATCH request", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Request is updated', () => pm.response.to.have.status(200));"] } }], "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"description\": \"Inspect connectors, enclosure and wiring\" }", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/api/requests/{{requestId}}" } },
+      { "name": "PATCH status to in_progress", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Status changes', () => pm.response.to.have.status(200));", "pm.test('Status is in_progress', () => pm.expect(pm.response.json().status).to.eql('in_progress'));"] } }], "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"status\": \"in_progress\" }", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/api/requests/{{requestId}}/status" } },
+      { "name": "PATCH invalid status transition (409)", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Invalid transition is rejected', () => pm.response.to.have.status(409));"] } }], "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{ \"status\": \"new\" }", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/api/requests/{{requestId}}/status" } },
+      { "name": "GET equipment requests", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Nested requests are returned', () => pm.response.to.have.status(200));", "pm.test('Nested response is an array', () => pm.expect(pm.response.json()).to.be.an('array'));"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/equipment/{{equipmentId}}/requests" } },
+      { "name": "DELETE equipment with open request (409)", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Deletion with an open request is rejected', () => pm.response.to.have.status(409));"] } }], "request": { "method": "DELETE", "url": "{{baseUrl}}/api/equipment/{{equipmentId}}" } },
+      { "name": "DELETE request", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Request is deleted', () => pm.response.to.have.status(204));"] } }], "request": { "method": "DELETE", "url": "{{baseUrl}}/api/requests/{{requestId}}" } },
+      { "name": "DELETE equipment", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Equipment is deleted', () => pm.response.to.have.status(204));"] } }], "request": { "method": "DELETE", "url": "{{baseUrl}}/api/equipment/{{equipmentId}}" } }
+    ] },
+    { "name": "Security", "item": [
+      { "name": "Rate limit (429; set a low RATE_LIMIT_MAX then repeat)", "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Rate limit is enforced', () => pm.response.to.have.status(429));", "pm.test('Rate limit headers are present', () => pm.expect(pm.response.headers.has('RateLimit') || pm.response.headers.has('RateLimit-Limit') || pm.response.headers.has('X-RateLimit-Limit')).to.be.true);"] } }], "request": { "method": "GET", "url": "{{baseUrl}}/api/health" } }
+    ] }
   ]
 }

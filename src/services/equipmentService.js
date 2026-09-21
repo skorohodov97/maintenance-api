@@ -1,6 +1,9 @@
 import equipmentRepository from '../repositories/equipmentRepository.js';
+import maintenanceRequestRepository from '../repositories/maintenanceRequestRepository.js';
 import { ConflictError } from '../errors/index.js';
 import weatherService from './weatherService.js';
+
+const openRequestStatuses = new Set(['new', 'in_progress']);
 
 const ensureUniqueSerialNumber = async (serialNumber, equipmentId) => {
   if (serialNumber === undefined) {
@@ -44,14 +47,7 @@ const equipmentService = {
     const total = filteredEquipment.length;
     const startIndex = (page - 1) * limit;
 
-    return {
-      data: filteredEquipment.slice(startIndex, startIndex + limit),
-      meta: {
-        total,
-        page,
-        limit,
-      },
-    };
+    return { data: filteredEquipment.slice(startIndex, startIndex + limit), meta: { total, page, limit } };
   },
 
   async getEquipmentById(id) {
@@ -60,33 +56,31 @@ const equipmentService = {
 
   async createEquipment(data) {
     await ensureUniqueSerialNumber(data.serialNumber);
-
     return equipmentRepository.create(data);
   },
 
   async updateEquipment(id, data) {
     const equipment = await equipmentRepository.findById(id);
-
-    if (!equipment) {
-      return null;
-    }
-
+    if (!equipment) return null;
     await ensureUniqueSerialNumber(data.serialNumber, id);
-
     return equipmentRepository.update(id, data);
   },
 
   async getWeatherById(id) {
     const equipment = await equipmentRepository.findById(id);
-
-    if (!equipment) {
-      return null;
-    }
-
+    if (!equipment) return null;
     return weatherService.getOutdoorWorkForecast(equipment.location);
   },
 
   async deleteEquipment(id) {
+    const equipment = await equipmentRepository.findById(id);
+    if (!equipment) return null;
+    const requests = await maintenanceRequestRepository.findByEquipmentId(id);
+
+    if (requests.some((request) => openRequestStatuses.has(request.status))) {
+      throw new ConflictError('Equipment with open maintenance requests cannot be deleted');
+    }
+
     return equipmentRepository.delete(id);
   },
 };

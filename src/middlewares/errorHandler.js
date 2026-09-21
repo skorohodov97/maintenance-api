@@ -1,4 +1,5 @@
 import { AppError } from '../errors/index.js';
+import logger from '../utils/logger.js';
 
 const errorHandler = (error, request, response, next) => {
   const isPayloadTooLarge = error.type === 'entity.too.large';
@@ -16,13 +17,16 @@ const errorHandler = (error, request, response, next) => {
       : 'Internal server error';
   const details = isAppError && Array.isArray(error.details) ? error.details : [];
 
+  logger.error('Request failed', {
+    method: request.method,
+    path: request.originalUrl,
+    status: statusCode,
+    requestId: request.requestId,
+    code,
+  });
+
   response.status(statusCode).json({
-    error: {
-      code,
-      message,
-      details,
-      requestId: request.requestId ?? null,
-    },
+    error: { code, message, details, requestId: request.requestId ?? null },
   });
 };
 
