@@ -1,5 +1,6 @@
 import equipmentRepository from '../repositories/equipmentRepository.js';
 import { ConflictError } from '../errors/index.js';
+import weatherService from './weatherService.js';
 
 const ensureUniqueSerialNumber = async (serialNumber, equipmentId) => {
   if (serialNumber === undefined) {
@@ -73,6 +74,16 @@ const equipmentService = {
     await ensureUniqueSerialNumber(data.serialNumber, id);
 
     return equipmentRepository.update(id, data);
+  },
+
+  async getWeatherById(id) {
+    const equipment = await equipmentRepository.findById(id);
+
+    if (!equipment) {
+      return null;
+    }
+
+    return weatherService.getOutdoorWorkForecast(equipment.location);
   },
 
   async deleteEquipment(id) {

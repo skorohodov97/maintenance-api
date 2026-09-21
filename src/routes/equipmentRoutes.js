@@ -4,6 +4,7 @@ import {
   deleteEquipment,
   getEquipment,
   getEquipmentById,
+  getEquipmentWeather,
   updateEquipment,
 } from '../controllers/equipmentController.js';
 import { getRequestsByEquipmentId } from '../controllers/maintenanceRequestController.js';
@@ -25,8 +26,13 @@ equipmentRouter
   .get(validateRequest({ query: equipmentQuery }), asyncHandler(getEquipment))
   .post(validateRequest({ body: requiredEquipmentBody }), asyncHandler(createEquipment));
 equipmentRouter.get(
+  '/:id/weather',
+  validateEquipmentId,
+  asyncHandler(getEquipmentWeather),
+);
+equipmentRouter.get(
   '/:id/requests',
-  validateRequest({ params: equipmentIdParams }),
+  validateEquipmentId,
   asyncHandler(getRequestsByEquipmentId),
 );
 equipmentRouter
