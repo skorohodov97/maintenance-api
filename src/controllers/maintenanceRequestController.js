@@ -1,7 +1,7 @@
 import maintenanceRequestService from '../services/maintenanceRequestService.js';
 
 const getRequests = async (request, response) => {
-  const maintenanceRequests = await maintenanceRequestService.getAllRequests();
+  const maintenanceRequests = await maintenanceRequestService.getAllRequests(request.query);
 
   response.status(200).json(maintenanceRequests);
 };

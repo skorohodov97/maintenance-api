@@ -24,6 +24,7 @@ const maintenanceRequestRepository = {
   async create(data) {
     const request = {
       id: randomUUID(),
+      createdAt: new Date().toISOString(),
       ...data,
     };
 
