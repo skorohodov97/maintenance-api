@@ -17,6 +17,16 @@ const getEquipmentById = async (request, response) => {
   return response.status(200).json(equipment);
 };
 
+const getEquipmentWeather = async (request, response) => {
+  const weather = await equipmentService.getWeatherById(request.params.id);
+
+  if (!weather) {
+    throw new NotFoundError('Equipment not found');
+  }
+
+  return response.status(200).json(weather);
+};
+
 const createEquipment = async (request, response) => {
   const equipment = await equipmentService.createEquipment(request.body);
 
@@ -46,6 +56,7 @@ const deleteEquipment = async (request, response) => {
 export {
   getEquipment,
   getEquipmentById,
+  getEquipmentWeather,
   createEquipment,
   updateEquipment,
   deleteEquipment,
